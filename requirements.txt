@@ -1,7 +1,8 @@
 fastapi
 uvicorn
 transformers
-torch
 sentencepiece
 tokenizers
 pydantic
+boto3
+torch --index-url https://download.pytorch.org/whl/cpu
