@@ -3,11 +3,21 @@ from pydantic import BaseModel
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
 import os
+import boto3
+import tempfile
+
 app = FastAPI()
 
-# Load model
-model_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data","models", "airline_model","airline_model")
-print("Model path:", model_path)
+# Download model from S3
+s3 = boto3.client('s3')
+bucket = "airline-sentiment-model-bucket"
+model_files = ["config.json", "model.safetensors", "tokenizer.json", "tokenizer_config.json"]
+
+model_dir = tempfile.mkdtemp()
+for file in model_files:
+    s3.download_file(bucket, f"airline_model/{file}", os.path.join(model_dir, file))
+
+model_path = model_dir
 tokenizer = AutoTokenizer.from_pretrained(model_path)
 model = AutoModelForSequenceClassification.from_pretrained(model_path)
 model.eval()
@@ -18,6 +28,7 @@ class TweetInput(BaseModel):
 
 # Labels
 labels = {0: "negative", 1: "neutral", 2: "positive"}
+
 @app.get("/")
 def home():
     return {"message": "Airline Sentiment API is running"}
