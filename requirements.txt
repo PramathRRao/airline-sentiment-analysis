@@ -1,8 +1,12 @@
 fastapi
 uvicorn
 transformers
+torch --index-url https://download.pytorch.org/whl/cpu
 sentencepiece
 tokenizers
 pydantic
 boto3
-torch --index-url https://download.pytorch.org/whl/cpu
+streamlit
+pandas
+matplotlib
+numpy
