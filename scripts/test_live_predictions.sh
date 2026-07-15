@@ -16,8 +16,10 @@ tweets=(
 )
 
 for t in "${tweets[@]}"; do
+  echo "--- $t ---"
   curl -s -X POST "$API_URL" \
     -H "Content-Type: application/json" \
-    -d "{\"text\": \"$t\"}" | python3 -m json.tool
+    -d "{\"text\": \"$t\"}"
+  echo
   sleep 2
 done
