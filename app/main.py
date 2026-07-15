@@ -5,8 +5,18 @@ import torch
 import os
 import boto3
 import tempfile
+import mlflow
+import itertools
 
 app = FastAPI()
+
+# MLflow live tracking
+MLFLOW_TRACKING_URI = os.environ.get("MLFLOW_TRACKING_URI")
+if MLFLOW_TRACKING_URI:
+    mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
+mlflow.set_experiment("airline-sentiment-live")
+mlflow_run = mlflow.start_run(run_name="api-live-predictions")
+request_counter = itertools.count()
 
 # Download model from S3
 s3 = boto3.client('s3')
@@ -46,9 +56,18 @@ def predict(tweet: TweetInput):
         outputs = model(**inputs)
         predicted_class = outputs.logits.argmax(dim=1).item()
         confidence = torch.softmax(outputs.logits, dim=1).max().item()
-    
+
+    step = next(request_counter)
+    mlflow.log_metric("confidence", confidence, step=step)
+    mlflow.log_metric("predicted_class", predicted_class, step=step)
+
     return {
         "text": tweet.text,
         "sentiment": labels[predicted_class],
         "confidence": round(confidence, 4)
     }
+
+
+@app.on_event("shutdown")
+def shutdown_event():
+    mlflow.end_run()

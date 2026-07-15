@@ -6,6 +6,7 @@ sentencepiece
 tokenizers
 pydantic
 boto3
+mlflow
 streamlit
 pandas
 matplotlib
